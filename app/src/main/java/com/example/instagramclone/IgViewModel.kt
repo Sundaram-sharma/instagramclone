@@ -2,6 +2,7 @@ package com.example.instagramclone
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
+import com.example.instagramclone.data.Event
 import com.example.instagramclone.data.UserData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -22,6 +23,7 @@ class IgViewModel @Inject constructor(
     val signedIn = mutableStateOf(false) //default values
     val inProgress = mutableStateOf(false) //default values
     val userDate = mutableStateOf<UserData?>(null) //default values
+    val popupNotification = mutableStateOf<Event<String>?>(null)
 
     fun onSignup(username: String, email: String, pass: String){
         inProgress.value = true
@@ -50,8 +52,12 @@ class IgViewModel @Inject constructor(
             }
             .addOnFailureListener {  }
     }
-
-    fun handleException(exception: Exception? = null, customMessage: String? =""){
-
+        //if error occurred above then the handleException will get called, update the popupNotification via Event,
+        //this will net to the notification
+    fun handleException(exception: Exception? = null, customMessage: String =""){
+        exception?.printStackTrace()//we dont want to print anything on console
+        val errorMsg = exception?.localizedMessage?: ""
+        val message = if(customMessage.isEmpty()) errorMsg else "$customMessage: $errorMsg"
+        popupNotification.value = Event(message)
     }
 }
