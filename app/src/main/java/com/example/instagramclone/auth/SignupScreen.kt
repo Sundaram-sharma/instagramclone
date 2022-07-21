@@ -83,7 +83,7 @@ fun SignupScreen(navController: NavController, vm: IgViewModel) {
             )
             Button(
                 onClick = {
-                    focus.clearFocus(force = true)
+                    focus.clearFocus(force = true) //dismiss the keyboard
                     vm.onSignup(
                         usernameState.value.text,
                         emailState.value.text,
