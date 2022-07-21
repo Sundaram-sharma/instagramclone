@@ -22,7 +22,7 @@ class IgViewModel @Inject constructor(
 
     val signedIn = mutableStateOf(false) //default values
     val inProgress = mutableStateOf(false) //default values
-    val userDate = mutableStateOf<UserData?>(null) //default values
+    val userData = mutableStateOf<UserData?>(null) //default values
     val popupNotification = mutableStateOf<Event<String>?>(null)
 
     fun onSignup(username: String, email: String, pass: String){
@@ -41,6 +41,7 @@ class IgViewModel @Inject constructor(
                             if(task.isSuccessful){
                                 signedIn.value = true
                                     //Create the profile
+                                createOrUpdateProfile(username = username)
                             }else{
                                 handleException(task.exception, "Signup failed")
                             }
@@ -51,6 +52,56 @@ class IgViewModel @Inject constructor(
 
             }
             .addOnFailureListener {  }
+    }
+
+    private fun createOrUpdateProfile(
+        name: String? = null,
+        username: String? = null,
+        bio: String? = null,
+        imageUrl: String? = null
+    ){ //create the user and store into Database
+
+        val uid = auth.currentUser?.uid
+        val userData = UserData( //from the UserData class
+            userId = uid,
+            name = name ?: userData.value?.name,
+            username = username ?:userData.value?.username,
+            bio = bio ?:userData.value?.bio,
+            imageUrl = imageUrl ?:userData.value?.imageUrl,
+            following = userData.value?.following
+        )
+
+        uid?.let{
+            uid ->
+            inProgress.value = true
+            db.collection(USERS).document(uid).get()
+                .addOnSuccessListener {
+                if(it.exists()){ //if it exists
+                    it.reference.update(userData.toMap())
+                        .addOnSuccessListener {
+                            this.userData.value = userData
+                            inProgress.value = false
+                        }
+                        .addOnFailureListener{
+                            handleException(it, "Cannot update user")
+                            inProgress.value = false
+                        }
+                }
+                else{
+                    db.collection(USERS).document(uid).set(userData)
+                    getUserData(uid)
+                    inProgress.value = false
+                }
+            }
+                .addOnFailureListener { exc -> handleException(exc, "Cannot create user")
+                inProgress.value = false
+                }
+        }
+
+    }
+
+    private fun getUserData(uid: String){
+
     }
         //if error occurred above then the handleException will get called, update the popupNotification via Event,
         //this will net to the notification
