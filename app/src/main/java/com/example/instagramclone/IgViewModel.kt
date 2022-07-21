@@ -6,6 +6,7 @@ import com.example.instagramclone.data.Event
 import com.example.instagramclone.data.UserData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.storage.FirebaseStorage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.lang.Exception
@@ -24,6 +25,15 @@ class IgViewModel @Inject constructor(
     val inProgress = mutableStateOf(false) //default values
     val userData = mutableStateOf<UserData?>(null) //default values
     val popupNotification = mutableStateOf<Event<String>?>(null)
+
+    init { //once the system starts our view model below will check we have user or not
+        //auth.signOut()
+        val currentUser = auth.currentUser
+        signedIn.value = currentUser != null
+        currentUser?.uid?.let{
+            uid -> getUserData(uid)
+        }
+    }
 
     fun onSignup(username: String, email: String, pass: String){
         inProgress.value = true
@@ -101,7 +111,19 @@ class IgViewModel @Inject constructor(
     }
 
     private fun getUserData(uid: String){
+        inProgress.value = true
+        db.collection(USERS).document(uid).get()
+            .addOnSuccessListener {
+                val user = it.toObject<UserData>()
+                    userData.value = user
+                    inProgress.value = false
+                    popupNotification.value = Event("User data retrieved successfully")
 
+            }
+            .addOnFailureListener { exc ->
+                handleException(exc, "Cannot retrive user data")
+                inProgress.value = false
+            }
     }
         //if error occurred above then the handleException will get called, update the popupNotification via Event,
         //this will net to the notification
