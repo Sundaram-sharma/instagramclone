@@ -85,7 +85,7 @@ fun SignupScreen(navController: NavController, vm: IgViewModel) {
                         usernameState.value.text,
                         emailState.value.text,
                         passState.value.text
-                    )
+                    ) //test
                 },
                 modifier = Modifier.padding(8.dp)
             ) {
