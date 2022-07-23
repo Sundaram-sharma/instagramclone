@@ -1,4 +1,4 @@
-package com.example.instagramclone
+package com.example.instagramclone.di
 
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth

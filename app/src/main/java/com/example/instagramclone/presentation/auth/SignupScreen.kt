@@ -1,4 +1,4 @@
-package com.example.instagramclone.auth
+package com.example.instagramclone.presentation.auth
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -23,17 +23,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.instagramclone.DestinationScreen
-import com.example.instagramclone.IgViewModel
 import com.example.instagramclone.R
-import com.example.instagramclone.main.CommonProgessSpinner
-import com.example.instagramclone.main.navigateTo
-
-
+import com.example.instagramclone.presentation.auth.main.CheckSignedIn
+import com.example.instagramclone.presentation.auth.main.CommonProgessSpinner
+import com.example.instagramclone.presentation.auth.main.navigateTo
+import com.example.instagramclone.viewModel.IgViewModel
 
 @Composable
-fun LoginScreen(navController: NavController, vm: IgViewModel) {
+fun SignupScreen(navController: NavController, vm: IgViewModel) {
 
-    //CheckSignedIn(vm = vm, navController = navController)
+
+
+    CheckSignedIn(vm = vm, navController = navController)
 
     val focus = LocalFocusManager.current
 
@@ -47,8 +48,11 @@ fun LoginScreen(navController: NavController, vm: IgViewModel) {
                 ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
+            val usernameState = remember { mutableStateOf(TextFieldValue()) }
             val emailState = remember { mutableStateOf(TextFieldValue()) }
             val passState = remember { mutableStateOf(TextFieldValue()) }
+
 
             Image(
                 painter = painterResource(id = R.drawable.ig_logo),
@@ -59,11 +63,16 @@ fun LoginScreen(navController: NavController, vm: IgViewModel) {
                     .padding(8.dp)
             )
             Text(
-                text = "Login",
+                text = "Signup",
                 modifier = Modifier.padding(8.dp),
                 fontSize = 30.sp,
-                fontFamily = FontFamily.Serif
+                fontFamily = FontFamily.SansSerif
             )
+            OutlinedTextField(
+                value = usernameState.value,
+                onValueChange = { usernameState.value = it },
+                modifier = Modifier.padding(8.dp),
+                label = { Text(text = "Username") })
             OutlinedTextField(
                 value = emailState.value,
                 onValueChange = { emailState.value = it },
@@ -78,20 +87,23 @@ fun LoginScreen(navController: NavController, vm: IgViewModel) {
             )
             Button(
                 onClick = {
-                    focus.clearFocus(force = true)
-                    //vm.onLogin(emailState.value.text, passState.value.text)
+                    focus.clearFocus(force = true) //dismiss the keyboard
+                    vm.onSignup(
+                        usernameState.value.text,
+                        emailState.value.text,
+                        passState.value.text
+                    ) //test
                 },
                 modifier = Modifier.padding(8.dp)
             ) {
-                Text(text = "LOGIN")
+                Text(text = "SIGN UP")
             }
-            Text(
-                text = "New here? Go to signup ->",
+            Text(text = "Already a user? Go to login ->",
                 color = Color.Blue,
                 modifier = Modifier
                     .padding(8.dp)
                     .clickable {
-                        navigateTo(navController, DestinationScreen.Signup)
+                        navigateTo(navController, DestinationScreen.Login)
                     }
             )
         }
@@ -99,6 +111,6 @@ fun LoginScreen(navController: NavController, vm: IgViewModel) {
         val isLoading = vm.inProgress.value
         if (isLoading) {
             CommonProgessSpinner()
-        }
+       }
     }
 }
